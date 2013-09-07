@@ -209,6 +209,7 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += \
 	bdAddrLoader \
+	wifiAddrLoader \
 	libwfcu \
 	conn_init
 
