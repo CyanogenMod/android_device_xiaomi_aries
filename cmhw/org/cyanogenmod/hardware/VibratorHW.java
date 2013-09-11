@@ -31,7 +31,7 @@ public class VibratorHW {
         return 100;
     }
     public static int getMinIntensity()  {
-        return 50;
+        return 70;
     }
     public static int getWarningThreshold()  {
         return -1;
@@ -40,7 +40,7 @@ public class VibratorHW {
         return Integer.parseInt(FileUtils.readOneLine(AMP_PATH));
     }
     public static int getDefaultIntensity()  {
-        return 70;
+        return 90;
     }
     public static boolean setIntensity(int intensity)  {
         return FileUtils.writeLine(AMP_PATH, String.valueOf(intensity));
