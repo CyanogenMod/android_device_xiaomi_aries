@@ -49,6 +49,8 @@ on init
     setprop persist.radio.custom_ecc_voice "{515:117},{452:113,114,115}"
     setprop persist.radio.custom_ecc_hard "911,*911,#911,112,999,000,08,118,120,122,110,119,995,111,113,125,127,133"
 
+    export BOOTCLASSPATH ${BOOTCLASSPATH}:/system/framework/qcom.fmradio.jar
+
 on fs
     exec /sbin/dualboot_init ./fstab.aries
     mount_all ./fstab.aries.patched
@@ -342,6 +344,13 @@ on property:init.svc.wpa_supplicant=stopped
 service rmt_storage /system/bin/rmt_storage
     class core
     user root
+
+service fm_dl /system/bin/sh /system/etc/init.aries.fm.sh
+    class late_start
+    user system
+    group qcom_oncrpc system
+    disabled
+    oneshot
 
 service hciattach /system/bin/sh /system/etc/init.aries.bt.sh
     class late_start
