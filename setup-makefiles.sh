@@ -1,7 +1,7 @@
 #!/bin/sh
 
-VENDOR=lge
-DEVICE=mako
+VENDOR=xiaomi
+DEVICE=aries
 OUTDIR=vendor/$VENDOR/$DEVICE
 MAKEFILE=../../../$OUTDIR/$DEVICE-vendor-blobs.mk
 

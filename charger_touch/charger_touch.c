@@ -20,7 +20,7 @@
 #include <fcntl.h>
 
 #define POWER_SUPPLY_PATH "/sys/class/power_supply"
-#define TOUCH_PATH "/sys/devices/virtual/input/lge_touch/charger"
+#define TOUCH_PATH "/sys/devices/virtual/input/xiaomi_touch/charger"
 
 const char* WIRELESS = "change@/devices/platform/bq51051b_wlc/power_supply/wireless";
 const char* USB = "change@/devices/platform/msm_ssbi.0/pm8921-core/pm8921-charger/power_supply/usb";
