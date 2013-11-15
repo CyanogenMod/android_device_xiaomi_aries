@@ -24,16 +24,12 @@
 
 extern int qmi_nv_read_wlan_mac(unsigned char** mac);
 
-static char *argv_wifi_disable[] = {"svc", "wifi", "disable"};
-static char *argv_wifi_enable[] = {"svc", "wifi", "enable"};
-
 int main(int argc, char *argv[])
 {
     FILE *fp;
     unsigned char *mac = NULL;
     int rc;
     int status;
-    char wlan_status[PROPERTY_VALUE_MAX];
 
     fp = fopen(DEV_MAC_ADDRESS, "wb");
     if (fp == NULL) {
@@ -47,15 +43,6 @@ int main(int argc, char *argv[])
     // write mac address
     fprintf(fp, "%02x:%02x:%02x:%02x:%02x:%02x", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
     fclose(fp);
-
-    // restart wifi if its already running
-    property_get("wlan.driver.status", wlan_status, "unloaded");
-    if(!strcmp(wlan_status, "ok")) {
-        android_fork_execvp_ext(ARRAY_SIZE(argv_wifi_disable), argv_wifi_disable,
-                                          &status, true, LOG_KLOG, true, NULL);
-        android_fork_execvp_ext(ARRAY_SIZE(argv_wifi_disable), argv_wifi_enable,
-                                          &status, true, LOG_KLOG, true, NULL);
-    }
 
     return 0;
 }
