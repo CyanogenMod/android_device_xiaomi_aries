@@ -52,9 +52,9 @@ int main(int argc, char *argv[])
     property_get("wlan.driver.status", wlan_status, "unloaded");
     if(!strcmp(wlan_status, "ok")) {
         android_fork_execvp_ext(ARRAY_SIZE(argv_wifi_disable), argv_wifi_disable,
-                                          &status, true, LOG_KLOG, true);
+                                          &status, true, LOG_KLOG, true, NULL);
         android_fork_execvp_ext(ARRAY_SIZE(argv_wifi_disable), argv_wifi_enable,
-                                          &status, true, LOG_KLOG, true);
+                                          &status, true, LOG_KLOG, true, NULL);
     }
 
     return 0;
