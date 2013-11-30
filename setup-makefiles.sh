@@ -91,7 +91,7 @@ EOF
 
 LOCAL_PATH := \$(call my-dir)
 
-ifeq (\$(TARGET_DEVICE),mako)
+ifeq (\$(TARGET_DEVICE),aries)
 
 include \$(CLEAR_VARS)
 LOCAL_MODULE := libacdbloader
