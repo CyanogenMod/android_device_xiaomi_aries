@@ -1308,7 +1308,7 @@ SectionDevice
 EndSection
 
 SectionDevice
-	Name "Handset VoiceProc"
+	Name "Voice Earpiece"
 	Comment "Handset VoiceProc Rx device"
 
 	EnableSequence
@@ -1351,7 +1351,7 @@ SectionDevice
 EndSection
 
 SectionDevice
-	Name "Handset VOIP VoiceProc"
+	Name "VOIP Earpiece"
 	Comment "Handset VOIP VoiceProc Rx device"
 
 	EnableSequence
@@ -1485,7 +1485,7 @@ SectionDevice
 EndSection
 
 SectionDevice
-	Name "Handfree VoiceProc"
+	Name "Voice Speaker"
 	Comment "Handfree VoiceProc Rx device"
 
 	EnableSequence
@@ -1532,7 +1532,7 @@ SectionDevice
 EndSection
 
 SectionDevice
-	Name "Handfree VOIP VoiceProc"
+	Name "VOIP Speaker"
 	Comment "Handfree VOIP VoiceProc Rx device"
 
 	EnableSequence
@@ -1682,7 +1682,7 @@ SectionDevice
 EndSection
 
 SectionDevice
-	Name "Headset VoiceProc"
+	Name "Voice Headphones"
 	Comment "Headset Voice Rx device"
 
 	EnableSequence
@@ -1734,7 +1734,7 @@ SectionDevice
 EndSection
 
 SectionDevice
-	Name "Headset VOIP VoiceProc"
+	Name "VOIP Headphones"
 	Comment "Headset VOIP Voice Rx device"
 
 	EnableSequence
@@ -2119,7 +2119,7 @@ SectionDevice
 EndSection
 
 SectionDevice
-	Name "HeadsetMic TX"
+	Name "Headset"
 	Comment "HeadsetMic Tx device"
 
 	EnableSequence
@@ -2193,7 +2193,7 @@ SectionDevice
 EndSection
 
 SectionDevice
-        Name "Line Voice"
+        Name "Voice Line"
         Comment "Speaker Tx device Voice"
 
         EnableSequence
