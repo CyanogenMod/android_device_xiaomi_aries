@@ -111,11 +111,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # FIXME: Remove persist.audio.handset.mic and persist.audio.fluence.mode
 #        while switching new audio HAL from legacy HAL
 PRODUCT_PROPERTY_OVERRIDES += \
+	persist.audio.handset.mic.type=digital \
+	persist.audio.dualmic.config=endfire \
+	persist.audio.fluence.voicecall=true \
+	persist.audio.handset.mic=dmic \
 	persist.audio.fluence.mode=endfire \
-	persist.audio.vr.enable=false \
-	persist.audio.handset.mic=digital \
-	af.resampler.quality=255 \
-	mpq.audio.decode=true
+	persist.audio.lowlatency.rec=false \
+	af.resampler.quality=4
 
 
 # Do not power down SIM card when modem is sent to Low Power Mode.
@@ -150,14 +152,12 @@ PRODUCT_PACKAGES += \
 	memtrack.msm8960
 
 PRODUCT_PACKAGES += \
-	alsa.msm8960 \
 	audio_policy.msm8960 \
 	audio.primary.msm8960 \
 	audio.a2dp.default \
 	audio.usb.default \
 	audio.r_submix.default \
-	libaudio-resampler \
-	tinymix
+	libaudio-resampler
 
 # Voice processing
 PRODUCT_PACKAGES += libqcomvoiceprocessing
