@@ -111,12 +111,14 @@
     <ctl name="RX6 DSM MUX" value="CIC_OUT" />
     <ctl name="RX4 DSM MUX" value="CIC_OUT" />
     <ctl name="HPHL DAC Switch" value="0" />
+    <ctl name="HPHR DAC Switch" value="0" />
     <ctl name="DAC1 Switch" value="0" />
     <ctl name="SLIM_0_RX Channels" value="One" />
     <ctl name="SLIM_0_TX Channels" value="One" />
     <ctl name="SLIM_3_RX Channels" value="One" />
     <ctl name="HDMI_RX Channels" value="Two" />
     <ctl name="DYN MICBIAS MUX" value="ZERO" />
+    <ctl name="IIR1 INP1 Volume" value="0" />
 
     <!-- These are audio route (FE to BE) specific mixer settings -->
     <path name="deep-buffer-playback">
@@ -215,6 +217,8 @@
         <ctl name="SLIM_0_TX Channels" value="One" />
         <ctl name="SLIM TX7 MUX" value="DEC5" />
         <ctl name="DEC5 MUX" value="ADC2" />
+        <ctl name="DEC5 Volume" value="68" />
+        <ctl name="ADC2 Volume" value="0" />
         <ctl name="DYN MICBIAS MUX" value="MB2" />
     </path>
 
@@ -253,8 +257,6 @@
 
     <path name="handset-mic">
         <path name="adc2" />
-        <ctl name="DEC5 Volume" value="68" />
-        <!--<ctl name="ADC2 Volume" value="0" />-->
     </path>
 
     <path name="headphones">
@@ -270,8 +272,6 @@
 
     <path name="headset-mic">
         <path name="adc2" />
-        <ctl name="DEC5 Volume" value="68" />
-        <!--<ctl name="ADC2 Volume" value="0" />-->
     </path>
 
     <path name="voice-handset-tmus">
@@ -306,12 +306,10 @@
 
     <path name="voice-rec-mic">
         <path name="adc2" />
-        <ctl name="DEC5 Volume" value="68" />
     </path>
 
     <path name="camcorder-mic">
         <path name="adc2" />
-        <ctl name="DEC5 Volume" value="68" />
     </path>
 
     <path name="hdmi-mic">
@@ -329,6 +327,8 @@
         <ctl name="SLIM_0_TX Channels" value="One" />
         <ctl name="SLIM TX7 MUX" value="DEC5" />
         <ctl name="DEC5 MUX" value="ADC2" />
+        <ctl name="DEC5 Volume" value="68" />
+        <ctl name="ADC2 Volume" value="0" />
         <ctl name="DYN MICBIAS MUX" value="MB2" />
     </path>
 
