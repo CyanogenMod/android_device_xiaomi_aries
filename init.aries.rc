@@ -27,7 +27,7 @@ on init
     mkdir /mnt/media_rw/sdcard0 0700 media_rw media_rw
     mkdir /mnt/media_rw/usbdisk 0700 media_rw media_rw
     mkdir /storage/sdcard0 0775 system system
-    mkdir /storage/usbdisk0 0775 system system
+    mkdir /storage/usbdisk 0775 system system
 
     # Set permissions for persist partition
     mkdir /persist 0771 system system
@@ -38,8 +38,8 @@ on init
     # Support legacy paths
     symlink /storage/sdcard0 /sdcard
     symlink /storage/sdcard0 /mnt/sdcard
-    symlink /storage/usbdisk0 /usbdisk0
-    symlink /storage/usbdisk0 /mnt/usbdisk0
+    symlink /storage/usbdisk /usbdisk
+    symlink /storage/usbdisk /mnt/usbdisk
 
     # Setup custom emergency number list based on
     # the MCC. This is needed by RIL.
