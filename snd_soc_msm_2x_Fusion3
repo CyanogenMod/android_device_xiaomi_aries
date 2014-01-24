@@ -1261,54 +1261,6 @@ EndSection
 
 SectionDevice
 	Name "Voice Earpiece"
-	Comment "Handset Rx device"
-
-	EnableSequence
-		'SLIM_0_RX Channels':0:One
-		'RX1 MIX1 INP1':0:RX1
-		'RX1 MIX1 INP2':0:RX6
-		'EAR PA Gain':0:POS_2_DB
-		'DAC1 Switch':1:1
-		'SLIM TX3 MUX':0:RMIX1
-		'IIR1 Band1':2:0x10000000 0x0 0x0 0x0 0x0
-		'IIR1 Band2':2:0x10000000 0x0 0x0 0x0 0x0
-		'IIR1 Band3':2:0x10000000 0x0 0x0 0x0 0x0
-		'IIR1 Band4':2:0x10000000 0x0 0x0 0x0 0x0
-		'IIR1 Band5':2:0x10000000 0x0 0x0 0x0 0x0
-		'IIR1 Enable Band1':1:1
-		'IIR1 Enable Band2':1:1
-		'IIR1 Enable Band3':1:1
-		'IIR1 Enable Band4':1:1
-		'IIR1 Enable Band5':1:1
-		'RX1 MIX2 INP1':0:IIR1
-		'RX1 Digital Volume':1:68
-	EndSequence
-
-	DisableSequence
-		'RX1 MIX1 INP1':0:ZERO
-		'RX1 MIX1 INP2':0:ZERO
-		'DAC1 Switch':1:0
-		'SLIM TX3 MUX':0:ZERO
-		'IIR1 Enable Band1':1:0
-		'IIR1 Enable Band2':1:0
-		'IIR1 Enable Band3':1:0
-		'IIR1 Enable Band4':1:0
-		'IIR1 Enable Band5':1:0
-		'IIR1 Band1':2:0x0 0x0 0x0 0x0 0x0
-		'IIR1 Band2':2:0x0 0x0 0x0 0x0 0x0
-		'IIR1 Band3':2:0x0 0x0 0x0 0x0 0x0
-		'IIR1 Band4':2:0x0 0x0 0x0 0x0 0x0
-		'IIR1 Band5':2:0x0 0x0 0x0 0x0 0x0
-		'RX1 MIX2 INP1':0:ZERO
-	EndSequence
-
-	ACDBID	7:1
-	EffectsMixerCTL "SRS TruMedia"
-
-EndSection
-
-SectionDevice
-	Name "Voice Earpiece"
 	Comment "Handset VoiceProc Rx device"
 
 	EnableSequence
@@ -1616,68 +1568,6 @@ SectionDevice
 	ACDBID	10:1
 	EffectsMixerCTL "SRS TruMedia"
 	EC_REF_RXMixerCTL "SLIM_RX"
-
-EndSection
-
-SectionDevice
-	Name "Voice Headphones"
-	Comment "Headset Rx device for voice call"
-
-	EnableSequence
-		'SLIM_0_RX Channels':0:Two
-		'RX1 MIX1 INP1':0:RX1
-		'RX1 MIX1 INP2':0:RX6
-		'RX2 MIX1 INP1':0:RX2
-		'RX2 MIX1 INP2':0:RX7
-		'HPHL DAC Switch':1:1
-		'HPHR DAC Switch':1:1
-		'HPHL Volume':1:80
-		'HPHR Volume':1:80
-		'SLIM TX3 MUX':0:RMIX1
-		'SLIM TX5 MUX':0:RMIX2
-		'IIR1 Band1':2:0x10000000 0x0 0x0 0x0 0x0
-		'IIR1 Band2':2:0x10000000 0x0 0x0 0x0 0x0
-		'IIR1 Band3':2:0x10000000 0x0 0x0 0x0 0x0
-		'IIR1 Band4':2:0x10000000 0x0 0x0 0x0 0x0
-		'IIR1 Band5':2:0x10000000 0x0 0x0 0x0 0x0
-		'IIR1 Enable Band1':1:1
-		'IIR1 Enable Band2':1:1
-		'IIR1 Enable Band3':1:1
-		'IIR1 Enable Band4':1:1
-		'IIR1 Enable Band5':1:1
-		'RX1 MIX2 INP1':0:IIR1
-		'RX2 MIX2 INP1':0:IIR1
-		'RX1 Digital Volume':1:68
-		'RX2 Digital Volume':1:68
-	EndSequence
-
-	DisableSequence
-		'RX1 MIX1 INP1':0:ZERO
-		'RX1 MIX1 INP2':0:ZERO
-		'RX2 MIX1 INP1':0:ZERO
-		'RX2 MIX1 INP2':0:ZERO
-		'HPHL DAC Switch':1:0
-		'HPHR DAC Switch':1:0
-		'HPHL Volume':1:0
-		'HPHR Volume':1:0
-		'SLIM TX3 MUX':0:ZERO
-		'SLIM TX5 MUX':0:ZERO
-		'IIR1 Enable Band1':1:0
-		'IIR1 Enable Band2':1:0
-		'IIR1 Enable Band3':1:0
-		'IIR1 Enable Band4':1:0
-		'IIR1 Enable Band5':1:0
-		'IIR1 Band1':2:0x0 0x0 0x0 0x0 0x0
-		'IIR1 Band2':2:0x0 0x0 0x0 0x0 0x0
-		'IIR1 Band3':2:0x0 0x0 0x0 0x0 0x0
-		'IIR1 Band4':2:0x0 0x0 0x0 0x0 0x0
-		'IIR1 Band5':2:0x0 0x0 0x0 0x0 0x0
-		'RX1 MIX2 INP1':0:ZERO
-		'RX2 MIX2 INP1':0:ZERO
-	EndSequence
-
-	ACDBID	10:1
-	EffectsMixerCTL "SRS TruMedia"
 
 EndSection
 
