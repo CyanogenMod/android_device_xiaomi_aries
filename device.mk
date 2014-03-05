@@ -32,8 +32,8 @@ PRODUCT_PACKAGES := \
 	lights.aries
 
 PRODUCT_PACKAGES += \
-    charger_res_images \
-    charger
+    charger_res_images_aries \
+    charger_aries
 
 # Live Wallpapers
 PRODUCT_PACKAGES += \
