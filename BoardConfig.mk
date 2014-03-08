@@ -40,7 +40,7 @@ BOARD_KERNEL_CMDLINE := console=null androidboot.hardware=aries lpj=67677 user_d
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 
 # Try to build the kernel
-TARGET_KERNEL_CONFIG := aries_defconfig
+TARGET_KERNEL_CONFIG := cyanogen_aries_defconfig
 
 TARGET_QCOM_AUDIO_VARIANT := caf
 BOARD_USES_ALSA_AUDIO:= true
