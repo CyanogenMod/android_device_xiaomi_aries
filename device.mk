@@ -250,10 +250,6 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     qcom.hw.aac.encoder=true
 
-# OTA Update site
-PRODUCT_PROPERTY_OVERRIDES += \
-	cm.updater.uri=http://mi2cm.voxia.co.uk/update.json
-
 PRODUCT_PACKAGES += \
     libOmxAacEnc \
     libOmxAmrEnc \
