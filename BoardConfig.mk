@@ -88,9 +88,13 @@ TARGET_USES_OVERLAY := true
 TARGET_USES_SF_BYPASS := true
 TARGET_USES_C2D_COMPOSITION := true
 
+BOARD_NATIVE_DUALBOOT := true
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
 TARGET_RECOVERY_UI_LIB := librecovery_ui_aries
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_15x24.h\"
+BOARD_CUSTOM_RECOVERY_UI := \
+	../../device/xiaomi/aries/recovery/dualboot.c \
+	../../device/xiaomi/aries/recovery/recovery_ui.c
 
 TARGET_RECOVERY_FSTAB = device/xiaomi/aries/fstab.aries
 RECOVERY_FSTAB_VERSION = 2
