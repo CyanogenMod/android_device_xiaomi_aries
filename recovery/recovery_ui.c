@@ -267,3 +267,65 @@ void device_truedualboot_after_load_volume_table() {
 		v->blk_device = PATH_USERDATA_NODE_BACKUP;
 	}
 }
+
+static int set_bootmode(char* bootmode) {
+	// open misc-partition
+	FILE* misc = fopen("/dev/block/platform/msm_sdcc.1/by-name/misc", "wb");
+	if (misc == NULL) {
+		printf("Error opening misc partition.\n");
+		return -1;
+	}
+
+	// write bootmode
+	fseek(misc, 0x1000, SEEK_SET);
+	if(fputs(bootmode, misc)<0) {
+		printf("Error writing bootmode to misc partition.\n");
+		return -1;
+	}
+
+	// close
+	fclose(misc);
+	return 0;
+}
+
+static int get_bootmode(char* bootmode) {
+	// open misc-partition
+	FILE* misc = fopen("/dev/block/platform/msm_sdcc.1/by-name/misc", "rb");
+	if (misc == NULL) {
+		printf("Error opening misc partition.\n");
+		return -1;
+	}
+
+	// read bootmode
+	fseek(misc, 0x1000, SEEK_SET);
+	if(fgets(bootmode, 13, misc)==NULL) {
+		printf("Error reading bootmode from misc partition.\n");
+		return -1;
+	}
+
+	// close
+	fclose(misc);
+	return 0;
+}
+
+void device_choose_bootmode(void) {
+	int sys = dualboot_select_system("Set bootmode:");
+	if(sys==GO_BACK) return;
+
+	if(sys==SYSTEM1)
+		set_bootmode("boot-system0");
+	else if(sys==SYSTEM2)
+		set_bootmode("boot-system1");
+}
+
+int device_get_bootmode(char* bootmode_name) {
+	char* sysnum = 0;
+
+	char bootmode[13];
+	get_bootmode(&bootmode);
+	if(strcmp(bootmode, "boot-system1")==0)
+		sysnum = 1;
+
+	sprintf(bootmode_name, "active system: %d", sysnum+1);
+	return 0;
+}

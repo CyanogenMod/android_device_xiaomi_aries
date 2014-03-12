@@ -9,6 +9,7 @@ enum dualboot_system {
 	SYSTEM2
 };
 
+int dualboot_select_system(const char* title);
 void dualboot_init(void);
 void dualboot_show_selection_ui(void);
 enum dualboot_system get_selected_system(void);

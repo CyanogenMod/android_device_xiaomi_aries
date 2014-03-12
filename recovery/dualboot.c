@@ -29,7 +29,7 @@ enum dualboot_system get_selected_system(void) {
 	return selected_system;
 }
 
-static int select_system(const char* title) {
+int dualboot_select_system(const char* title) {
 	const char* headers[] = { title, "", NULL };
 	char* items[] = { "System1", "System2", NULL };
 	enum dualboot_system chosen_item = -1;
@@ -123,7 +123,7 @@ void dualboot_setup_env(void) {
 }
 
 void dualboot_show_selection_ui(void) {
-	int sys = select_system("Select System to manage:");	
+	int sys = dualboot_select_system("Select System to manage:");
 	if(sys!=GO_BACK) selected_system = sys;
 }
 
