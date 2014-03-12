@@ -6,10 +6,12 @@
 #include "common.h"
 #include "recovery_ui.h"
 #include "mounts.h"
+#include "roots.h"
 
 extern int ui_menu_level;
 extern int ui_root_menu;
 static enum dualboot_system selected_system = INVALID_SYSTEM;
+static int force_raw_format = 0;
 
 struct partition {
 	char path[PATH_MAX];
@@ -28,7 +30,7 @@ enum dualboot_system get_selected_system(void) {
 }
 
 static int select_system(const char* title) {
-	char* headers[] = { title, "", NULL };
+	const char* headers[] = { title, "", NULL };
 	char* items[] = { "System1", "System2", NULL };
 	enum dualboot_system chosen_item = -1;
 
@@ -85,13 +87,13 @@ static int replace_device_node(int num, struct stat* statbuf) {
 	MountedVolume * mv = find_mounted_volume_by_real_node(part_table[num].path);
 
 	if(mv!=NULL && unmount_mounted_volume(mv)!=0) {
-		LOGE("replace_device_node: could not unmount device!\n");
+		LOGE("could not unmount device!\n");
 		return -1;
 	} 
 
 	unlink(part_table[num].path);
 	if(mknod(part_table[num].path, statbuf->st_mode, statbuf->st_rdev)!=0) {
-		LOGE("replace_device_node: could not create node!\n");
+		LOGE("could not create node!\n");
 		return -1;
 	}
 
@@ -151,4 +153,43 @@ void dualboot_init(void) {
 void dualboot_set_system(enum dualboot_system sys) {
 	selected_system = sys;
 	dualboot_setup_env();
+}
+
+static int dualboot_mount_dataroot(void) {
+	int rc = ensure_path_mounted_at_mount_point("/data", MOUNTPOINT_DATAROOT);
+	if(rc)
+		LOGE("failed mounting dataroot!\n");
+	return rc;
+}
+
+int dualboot_is_tdb_enabled(void) {
+	struct stat st;
+
+	if(dualboot_mount_dataroot())
+		return 0;
+
+	return lstat(TDB_FILE, &st)==0;
+}
+
+void dualboot_set_tdb_enabled(int enable) {
+	if(dualboot_mount_dataroot())
+		return;
+
+		if(enable) {
+			FILE * pFile = fopen(TDB_FILE, "w");
+			if(pFile==NULL) {
+				LOGE("TrueDualBoot: failed creating file");
+			return;
+		}
+		fclose(pFile);
+	}
+	else remove(TDB_FILE);
+}
+
+int is_force_raw_format_enabled(void) {
+	return !!force_raw_format;
+}
+
+void set_force_raw_format_enabled(int enabled) {
+	force_raw_format = enabled;
 }

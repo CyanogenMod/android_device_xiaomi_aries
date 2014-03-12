@@ -15,11 +15,17 @@
  */
 
 #include <linux/input.h>
+#include <sys/limits.h>
+#include <sys/stat.h>
+#include <sys/mount.h>
+#include <unistd.h>
 
 #include "dualboot.h"
 #include "recovery_ui.h"
 #include "common.h"
 #include "extendedcommands.h"
+#include "mounts.h"
+#include "roots.h"
 
 char* MENU_HEADERS[] = { NULL };
 
@@ -42,6 +48,17 @@ static void update_menu_items(void) {
 		MENU_ITEMS[0] = "Managed system [System2]";
 	else
 		MENU_ITEMS[0] = "Managed system [Invalid]";
+}
+
+static void patch_mount_script(void) {
+	ensure_path_mounted("/system");
+
+	if(dualboot_is_tdb_enabled())
+		__system("cp /res/dualboot/mount_ext4_tdb.sh /system/bin/mount_ext4.sh");
+	else
+		__system("cp /res/dualboot/mount_ext4_default.sh /system/bin/mount_ext4.sh");
+
+	chmod("/system/bin/mount_ext4.sh", 0755);
 }
 
 void device_ui_init(UIParameters* ui_parameters) {
@@ -74,8 +91,11 @@ int device_wipe_data() {
 int device_verify_root_and_recovery(void) {
 	dualboot_set_system(SYSTEM1);
 	verify_root_and_recovery();
+	patch_mount_script();
+
 	dualboot_set_system(SYSTEM2);
 	verify_root_and_recovery();
+	patch_mount_script();
 
 	return 0;
 }
@@ -91,4 +111,159 @@ int device_build_selection_title(char* buf, const char* title) {
 
 	sprintf(buf, "[%s] %s", prefix, title);
 	return 0;
+}
+
+void device_toggle_truedualboot(void) {
+	char confirm[PATH_MAX];
+	int enable = dualboot_is_tdb_enabled();
+
+	ui_setMenuTextColor(MENU_TEXT_COLOR_RED);
+	sprintf(confirm, "Yes - %s TrueDualBoot", enable?"DISABLE":"ENABLE");
+
+	if (confirm_selection("This will WIPE DATA. Confirm?", confirm)) {
+		// unmount /data
+		if(ensure_path_unmounted("/data")!=0) {
+			LOGE("Error unmounting /data!\n");
+			return;
+		}
+
+		// format /data
+		ui_set_background(BACKGROUND_ICON_INSTALLING);
+		ui_show_indeterminate_progress();
+		ui_print("Formatting /data...\n");
+		set_force_raw_format_enabled(1);
+		if(format_volume("/data")!=0) {
+			ui_print("Error formatting /data!\n");
+			ui_reset_progress();
+			return;
+		}
+		ui_reset_progress();
+		set_force_raw_format_enabled(0);
+		ui_print("Done.\n");
+
+		// toggle
+		dualboot_set_tdb_enabled(!enable);
+	}
+
+	ui_setMenuTextColor(MENU_TEXT_COLOR);
+
+	return;
+}
+
+int device_get_truedualboot_entry(char* tdb_name) {
+	sprintf(tdb_name, "toggle TrueDualBoot [%s]", dualboot_is_tdb_enabled()?"enabled":"disabled");
+	return 0;
+}
+
+int device_truedualboot_mount(const char* path, const char* mount_point) {
+	if(strcmp(path, "/data") != 0)
+		return 1;
+	else if(mount_point!=NULL && strcmp(mount_point, MOUNTPOINT_DATAROOT)==0)
+		return 1;
+
+	if(!dualboot_is_tdb_enabled())
+		return 1;
+
+	ensure_path_mounted_at_mount_point("/data", MOUNTPOINT_DATAROOT);
+
+	Volume* v = volume_for_path(path);
+	if (v == NULL) {
+		LOGE("unknown volume for path [%s]\n", path);
+		return -1;
+	}
+
+	int result = scan_mounted_volumes();
+	if (result < 0) {
+		LOGE("failed to scan mounted volumes\n");
+		return -1;
+	}
+
+	if (NULL == mount_point)
+		mount_point = v->mount_point;
+
+	const MountedVolume* mv =
+		find_mounted_volume_by_mount_point(mount_point);
+	if (mv) {
+		// volume is already mounted
+		return 0;
+	}
+
+	char* bind_path;
+	if(get_selected_system()==SYSTEM1)
+		bind_path = MOUNTPOINT_DATAROOT "/system0";
+	else if(get_selected_system()==SYSTEM2)
+		bind_path = MOUNTPOINT_DATAROOT "/system1";
+	else return -1;
+
+	mkdir(mount_point, 0755);  // in case it doesn't already exist
+	mkdir(bind_path, 0755);
+
+	char mount_cmd[PATH_MAX];
+	sprintf(mount_cmd, "mount -o bind %s %s", bind_path, mount_point);
+	int ret = __system(mount_cmd);
+	if(ret!=0) return ret>0?-ret:ret;
+
+	return 0;
+
+}
+
+int device_truedualboot_unmount(const char* path) {
+	if(strcmp(path, "/data") != 0)
+		return 1;
+
+	umount(MOUNTPOINT_DATAROOT);
+	return 1;
+}
+
+int device_truedualboot_format(const char* volume) {
+	if(strcmp(volume, "/data") != 0)
+		return 1;
+
+	if(is_force_raw_format_enabled() || !dualboot_is_tdb_enabled())
+		return 1;
+
+	int rc = format_unknown_device(NULL, volume, NULL);
+	return rc>0?-rc:rc;
+}
+
+int device_truedualboot_before_update(const char *path, ZipArchive *zip) {
+	// HACK: delete node to userdata partition so updater_script
+	// will not be able to mount it(the wrong way).
+	// we'll mount it now so files won't land on ramdisk
+
+	if(dualboot_is_tdb_enabled()) {
+		unlink(PATH_USERDATA_NODE);
+		ensure_path_mounted("/data");
+	}
+	else {
+		struct stat statbuf;
+
+		if(stat(PATH_USERDATA_NODE_BACKUP, &statbuf)) {
+			LOGE("could not stat userdata!\n");
+		}
+
+		if(mknod(PATH_USERDATA_NODE, statbuf.st_mode, statbuf.st_rdev)!=0) {
+			LOGE("could not create node!\n");
+			return -1;
+		}
+
+		ensure_path_unmounted("/data");
+	}
+
+	return 0;
+}
+
+void device_truedualboot_after_load_volume_table() {
+	ssize_t len;
+	char path[PATH_MAX];
+
+	Volume* v = volume_for_path("/data");
+	if(v->blk_device!=NULL) {
+		// resolve symlink
+		if((len = readlink(v->blk_device, path, sizeof(path)-1)) != -1)
+			path[len] = '\0';
+
+		rename(path, PATH_USERDATA_NODE_BACKUP);
+		v->blk_device = PATH_USERDATA_NODE_BACKUP;
+	}
 }

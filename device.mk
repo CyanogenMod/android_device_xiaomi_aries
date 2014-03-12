@@ -42,6 +42,11 @@ PRODUCT_PACKAGES += \
         VisualizationWallpapers \
         librs_jni
 
+# Dualboot
+PRODUCT_COPY_FILES += \
+	device/xiaomi/aries/recovery/mount_ext4_default.sh:recovery/root/res/dualboot/mount_ext4_default.sh \
+	device/xiaomi/aries/recovery/mount_ext4_tdb.sh:recovery/root/res/dualboot/mount_ext4_tdb.sh
+
 PRODUCT_COPY_FILES += \
 	device/xiaomi/aries/WCNSS_cfg.dat:system/vendor/firmware/wlan/prima/WCNSS_cfg.dat \
 	device/xiaomi/aries/WCNSS_qcom_cfg.ini:system/etc/wifi/WCNSS_qcom_cfg.ini \
