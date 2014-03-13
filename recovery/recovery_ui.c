@@ -242,6 +242,7 @@ int device_truedualboot_before_update(const char *path, ZipArchive *zip) {
 			LOGE("could not stat userdata!\n");
 		}
 
+		unlink(PATH_USERDATA_NODE);
 		if(mknod(PATH_USERDATA_NODE, statbuf.st_mode, statbuf.st_rdev)!=0) {
 			LOGE("could not create node!\n");
 			return -1;
