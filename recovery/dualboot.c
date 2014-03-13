@@ -101,6 +101,11 @@ static int replace_device_node(int num, struct stat* statbuf) {
 }
 
 void dualboot_setup_env(void) {
+	if(ensure_path_unmounted("/data")!=0) {
+		LOGE("Error unmounting /data!\n");
+		return;
+	}
+
 	if(selected_system==SYSTEM1) {
 		replace_device_node(PART_SYSTEM, &part_table[PART_SYSTEM].statbuf);
 		replace_device_node(PART_SYSTEM1, &part_table[PART_SYSTEM].statbuf);
