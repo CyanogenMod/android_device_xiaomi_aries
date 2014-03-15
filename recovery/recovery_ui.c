@@ -215,7 +215,7 @@ int device_truedualboot_unmount(const char* path) {
 	return 1;
 }
 
-int device_truedualboot_format(const char* volume) {
+int device_truedualboot_format_volume(const char* volume) {
 	if(strcmp(volume, "/data") != 0)
 		return 1;
 
@@ -224,6 +224,10 @@ int device_truedualboot_format(const char* volume) {
 
 	int rc = format_unknown_device(NULL, volume, NULL);
 	return rc>0?-rc:rc;
+}
+
+int device_truedualboot_format_device(const char *device, const char *path, const char *fs_type) {
+	return device_truedualboot_format_volume(path);
 }
 
 int device_truedualboot_before_update(const char *path, ZipArchive *zip) {
