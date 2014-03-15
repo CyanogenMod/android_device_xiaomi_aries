@@ -37,6 +37,10 @@ char* MENU_ITEMS[] = { "Managed System",
                        "backup and restore",
                        "mounts and storage",
                        "advanced",
+#ifdef PHILZ_TOUCH_RECOVERY
+                       "PhilZ Settings",
+                       "Power Options",
+#endif
                        NULL };
 
 static void update_menu_items(void) {
@@ -117,7 +121,10 @@ void device_toggle_truedualboot(void) {
 	char confirm[PATH_MAX];
 	int enable = dualboot_is_tdb_enabled();
 
+#ifndef PHILZ_TOUCH_RECOVERY
 	ui_setMenuTextColor(MENU_TEXT_COLOR_RED);
+#endif
+
 	sprintf(confirm, "Yes - %s TrueDualBoot", enable?"DISABLE":"ENABLE");
 
 	if (confirm_selection("This will WIPE DATA. Confirm?", confirm)) {
@@ -145,7 +152,9 @@ void device_toggle_truedualboot(void) {
 		dualboot_set_tdb_enabled(!enable);
 	}
 
+#ifndef PHILZ_TOUCH_RECOVERY
 	ui_setMenuTextColor(MENU_TEXT_COLOR);
+#endif
 
 	return;
 }
