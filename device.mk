@@ -228,10 +228,10 @@ PRODUCT_PACKAGES += \
 
 # fmradio support
 PRODUCT_PACKAGES += \
-    qcom.fmradio \
-    libqcomfm_jni \
-    FM2 \
-    FMRecord
+	qcom.fmradio \
+	libqcomfm_jni \
+	FM2 \
+	FMRecord
 
 # transmitter isn't supported
 PRODUCT_PROPERTY_OVERRIDES += \
