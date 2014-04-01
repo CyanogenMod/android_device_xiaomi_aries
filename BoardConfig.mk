@@ -69,7 +69,7 @@ TARGET_BOARD_INFO_FILE := device/xiaomi/aries/board-info.txt
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/xiaomi/aries/bluetooth
 
 # Use the CM PowerHAL
-TARGET_USES_CM_POWERHAL := true
+TARGET_POWERHAL_VARIANT := cm
 
 # FIXME: HOSTAPD-derived wifi driver
 BOARD_HAS_QCOM_WLAN := true
