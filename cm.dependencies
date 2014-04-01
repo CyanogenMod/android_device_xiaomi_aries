@@ -2,5 +2,9 @@
  {
    "repository": "android_kernel_xiaomi_aries",
    "target_path": "kernel/xiaomi/aries"
+ },
+ {
+   "repository": "android_hardware_qcom_fm",
+   "target_path": "hardware/qcom/fm"
  }
 ]
