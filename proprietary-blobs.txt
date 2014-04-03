@@ -155,6 +155,7 @@ vendor/firmware/bcm2079x_firmware.ncd
 vendor/firmware/bcm2079x_pre_firmware.ncd
 lib/libacdbdata.so
 lib/libacdbloader.so
+lib/libqminvapi.so
 lib/libAKM.so
 lib/libmorpho_noise_reduction.so
 vendor/firmware/keymaster/keymaster.b00

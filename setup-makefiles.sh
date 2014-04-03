@@ -63,7 +63,9 @@ PRODUCT_COPY_FILES := \\
 # Pick up overlay for features that depend on non-open-source files
 DEVICE_PACKAGE_OVERLAYS := vendor/$VENDOR/$DEVICE/overlay
 
-PRODUCT_PACKAGES += libacdbloader
+PRODUCT_PACKAGES += \\
+    libacdbloader \\
+    libqminvapi
 
 \$(call inherit-product, vendor/$VENDOR/$DEVICE/$DEVICE-vendor-blobs.mk)
 EOF
@@ -93,6 +95,15 @@ include \$(CLEAR_VARS)
 LOCAL_MODULE := libacdbloader
 LOCAL_MODULE_OWNER := qcom
 LOCAL_SRC_FILES := proprietary/lib/libacdbloader.so
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_SUFFIX := .so
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+include \$(BUILD_PREBUILT)
+
+include \$(CLEAR_VARS)
+LOCAL_MODULE := libqminvapi
+LOCAL_MODULE_OWNER := qcom
+LOCAL_SRC_FILES := proprietary/lib/libqminvapi.so
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_SUFFIX := .so
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
