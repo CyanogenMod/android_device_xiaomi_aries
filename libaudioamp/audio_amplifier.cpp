@@ -36,22 +36,6 @@
 #include <sys/system_properties.h>
 #include <AudioHardwareALSA.h>
 
-class CSDCommand
-{
-public:
-    CSDCommand(int command, int rx = 0, int tx = 0, uint32_t Flag = 0)
-    {
-        cmd = command;
-        rx_id = rx;
-        tx_id = tx;
-        devSetFlag = Flag;
-    };
-    int cmd;
-    int rx_id;
-    int tx_id;
-    uint32_t devSetFlag;
-};
-
 int fBoot = 1;
 
 int mDevices = AUDIO_DEVICE_NONE;
@@ -112,101 +96,7 @@ static ALSADevice_setMixerControl1 setMixerControl1;
 static ALSADevice_setMixerControl2 setMixerControl2;
 static android_audio_legacy::ALSADevice* alsadevObj;
 
-void *csdThreadWrapper(void *me);
-void csdThreadEntry();
-android::List <CSDCommand>  CSDCmdQueue;
-pthread_t csdThread;
-pthread_mutex_t m_csd_mutex;
-pthread_cond_t m_csd_cv;
-int m_csdCmd;
-bool m_killcsdThread;
 int mPrevDevice;
-
-
-static int (*csd_start_voice)(void);
-static int (*csd_stop_voice)(void);
-static int (*csd_disable_device)();
-static int (*csd_enable_device)(int, int, uint32_t);
-
-void *csdThreadWrapper(void *me) {
-	if(mcsd_handle==NULL) {
-		mcsd_handle = ::dlopen("/system/lib/libcsd-client.so", RTLD_NOW);
-		if (mcsd_handle == NULL) {
-		    ALOGE("AudioHardware: DLOPEN not successful for CSD CLIENT");
-		} else {
-			csd_start_voice = (int (*)())::dlsym(mcsd_handle, "csd_client_start_voice");
-			csd_stop_voice =  (int (*)())::dlsym(mcsd_handle, "csd_client_stop_voice");
-			csd_disable_device = (int (*)())::dlsym(mcsd_handle,  "csd_client_disable_device");
-			csd_enable_device = (int (*)(int,int,uint32_t))::dlsym(mcsd_handle, "csd_client_enable_device");
-		}
-	}
-
-    csdThreadEntry();
-    return NULL;
-}
-
-void csdThreadEntry() {
-    ALOGV("ALSADevice::csdThreadEntry +");
-    pid_t tid  = gettid();
-    int err;
-    int command_size = 0;
-    androidSetThreadPriority(tid, ANDROID_PRIORITY_URGENT_AUDIO);
-    m_csdCmd = CMD_CSD_READY;
-    while(!m_killcsdThread) {
-        while (!CSDCmdQueue.empty())  {
-            android::List<CSDCommand>::iterator it = CSDCmdQueue.begin();
-            CSDCommand csdcommand = *it;
-            ALOGE("CSDCommand, cmd:%d, rx:%d, tx:%d, flag:%d",
-                csdcommand.cmd, csdcommand.rx_id, csdcommand.tx_id, csdcommand.devSetFlag);
-            switch (csdcommand.cmd)
-            {
-                case CMD_CSD_START_VOICE:
-                {
-                    ALOGV("ALSADevice::csdThreadEntry, csd_client_start_voice");
-                    err = csd_start_voice();
-                    if (err < 0) {
-                        ALOGE("startVoiceCall: CMD_CSD_START_VOICE error %d\n", err);
-                    }
-                    break;
-                }
-                case CMD_CSD_END_VOICE:
-                {
-                    ALOGV("ALSADevice::csdThreadEntry, csd_client_stop_voice");
-                    err = csd_stop_voice();
-                    if (err < 0) {
-                        ALOGE("s_close: CMD_CSD_END_VOICE error %d\n", err);
-                    }
-                    break;
-                }
-                case CMD_CSD_ENABLE_DEVICE:
-                    ALOGV("ALSADevice::csdThreadEntry, csd_client_enable_device");
-                    err = csd_enable_device(csdcommand.rx_id, csdcommand.tx_id,
-                            csdcommand.devSetFlag);
-                    if (err < 0) {
-                        ALOGE("s_close: CMD_CSD_DISABLE_DEVICE error %d\n", err);
-                    }
-                    break;
-                case CMD_CSD_DISABLE_DEVICE:
-                    ALOGV("ALSADevice::csdThreadEntry, csd_client_disable_device");
-                    err = csd_disable_device();
-                    if (err < 0) {
-                        ALOGE("s_close: CMD_CSD_DISABLE_DEVICE error %d\n", err);
-                    }
-                    break;
-                default:
-                    m_csdCmd = CMD_CSD_READY;
-            }
-            CSDCmdQueue.erase(it);
-        }
-        pthread_mutex_lock(&m_csd_mutex);
-        pthread_cond_wait(&m_csd_cv, &m_csd_mutex);
-        pthread_mutex_unlock(&m_csd_mutex);
-        if (CSDCmdQueue.size() != 0)
-            ALOGV("CSD command size:%d", CSDCmdQueue.size());
-        continue;
-    }
-    ALOGV("ALSADevice::csdThreadEntry -");
-}
 
 //Call this API after enabling the Audience, Also call this API before disabling the Audience
 void enableAudienceloopback(int enable)

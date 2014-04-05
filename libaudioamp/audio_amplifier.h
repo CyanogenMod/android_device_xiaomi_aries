@@ -33,20 +33,6 @@ extern android::Mutex mAudioCodecLock;
 extern bool    mAudienceCodecInit;
 
 extern int mPrevDevice;
-extern pthread_mutex_t m_csd_mutex;
-extern pthread_cond_t m_csd_cv;
-extern bool m_killcsdThread;
-extern int m_csdCmd;
-extern pthread_t csdThread;
-extern void *csdThreadWrapper(void *me);
-
-enum {
-    CMD_CSD_READY = -1,
-    CMD_CSD_START_VOICE = 0,
-    CMD_CSD_END_VOICE    = 1,
-    CMD_CSD_ENABLE_DEVICE = 2,
-    CMD_CSD_DISABLE_DEVICE = 3,
-};
 
 enum {
     CMD_AUDIENCE_READY = -1,
