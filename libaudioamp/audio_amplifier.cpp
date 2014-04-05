@@ -36,66 +36,54 @@
 #include <sys/system_properties.h>
 #include <AudioHardwareALSA.h>
 
-int fBoot = 1;
-
-int mDevices = AUDIO_DEVICE_NONE;
-audio_mode_t mMode = AUDIO_MODE_NORMAL;
-
+// AMP API
 int amplifier_open(void) {
     return 0;
 }
 
 void amplifier_set_devices(int devices) {
-    if (devices != 0) {
-        if (mDevices != devices) {
-            mDevices = devices;
-            /* Set amplifier mode when device changes */
-            amplifier_set_mode(mMode);
-        }
-    }
 }
 
 int amplifier_set_mode(audio_mode_t mode) {
-    int ret = 0;
-
-    mMode = mode;
-
-    return ret;
+    return 0;
 }
 
 int amplifier_close(void) {
     return 0;
 }
 
+// public: vars
+int fBoot = 1;
+int mPrevDevice;
+pthread_cond_t mAudienceCV;
+int mAudienceCmd;
+bool    mAudienceCodecInit = 0;
+android::Mutex mAudioCodecLock;
+// public: functions
+void enableAudienceloopback(int enable);
+android::status_t doAudienceCodec_Init(android_audio_legacy::ALSADevice* alsa_device);
+android::status_t doAudienceCodec_DeInit(void);
+android::status_t doRouting_Audience_Codec(int mode, int device, bool enable);
 
+// private: vars
+static pthread_t AudienceThread;
+static pthread_mutex_t mAudienceMutex;
+static bool mKillAudienceThread;
+static int mLoopbackState = 0;
 static ES310_PathID dwOldPath = ES310_PATH_SUSPEND;
 static ES310_PathID dwNewPath = ES310_PATH_SUSPEND;
 static int AudiencePrevMode = AUDIO_MODE_NORMAL;
 static unsigned int dwOldPreset = -1;
 static unsigned int dwNewPreset = -1;
-
-pthread_t AudienceThread;
-pthread_mutex_t mAudienceMutex;
-pthread_cond_t mAudienceCV;
-int mAudienceCmd;
-bool mKillAudienceThread;
-void enableAudienceloopback(int enable);
-android::status_t doAudienceCodec_Init(android_audio_legacy::ALSADevice* alsa_device);
-android::status_t doAudienceCodec_DeInit(void);
-android::status_t doAudienceCodec_Wakeup(void);
-android::status_t doRouting_Audience_Codec(int mode, int device, bool enable);
-const char* getNameByPresetID(int presetID);
-bool    mAudienceCodecInit = 0;
-android::Mutex mAudioCodecLock;
-int mLoopbackState = 0;
-
+// private: functions
+static android::status_t doAudienceCodec_Wakeup(void);
+static const char* getNameByPresetID(int presetID);
 static ALSADevice_setMixerControl1 setMixerControl1;
 static ALSADevice_setMixerControl2 setMixerControl2;
 static android_audio_legacy::ALSADevice* alsadevObj;
 
-int mPrevDevice;
 
-//Call this API after enabling the Audience, Also call this API before disabling the Audience
+// Call this API after enabling the Audience, Also call this API before disabling the Audience
 void enableAudienceloopback(int enable)
 {
     if (mAudienceCodecInit != 1) {
@@ -229,7 +217,7 @@ android::status_t doAudienceCodec_DeInit(void)
     return 0;
 }
 
-android::status_t doAudienceCodec_Wakeup()
+static android::status_t doAudienceCodec_Wakeup()
 {
     int fd_codec = -1;
     int retry = 4;
@@ -542,7 +530,7 @@ RECOVER:
 
     return android::NO_ERROR;
 }
-const char* getNameByPresetID(int presetID)
+static const char* getNameByPresetID(int presetID)
 {
      switch(presetID){
         case ES310_PRESET_HANDSET_INCALL_NB:
