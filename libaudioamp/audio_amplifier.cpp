@@ -45,8 +45,6 @@ int amplifier_open(void) {
     return 0;
 }
 
-static void *mcsd_handle;
-
 void amplifier_set_devices(int devices) {
     if (devices != 0) {
         if (mDevices != devices) {
@@ -69,7 +67,6 @@ int amplifier_close(void) {
     return 0;
 }
 
-//namespace android {
 
 static ES310_PathID dwOldPath = ES310_PATH_SUSPEND;
 static ES310_PathID dwNewPath = ES310_PATH_SUSPEND;
@@ -90,7 +87,7 @@ android::status_t doRouting_Audience_Codec(int mode, int device, bool enable);
 const char* getNameByPresetID(int presetID);
 bool    mAudienceCodecInit = 0;
 android::Mutex mAudioCodecLock;
-int mLoopbackState;
+int mLoopbackState = 0;
 
 static ALSADevice_setMixerControl1 setMixerControl1;
 static ALSADevice_setMixerControl2 setMixerControl2;
@@ -586,4 +583,3 @@ const char* getNameByPresetID(int presetID)
      return "Unknown";
 }
 
-//}
