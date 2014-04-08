@@ -26,20 +26,6 @@ void amplifier_set_devices(int devices);
 int amplifier_set_mode(audio_mode_t mode);
 int amplifier_close(void);
 
-// AUDIENCE THREAD
-extern int mAudienceCmd;
-extern pthread_cond_t mAudienceCV;
-extern android::Mutex mAudioCodecLock;
-extern bool    mAudienceCodecInit;
-enum {
-    CMD_AUDIENCE_READY = -1,
-    CMD_AUDIENCE_WAKEUP = 0,
-};
-
-// ALSADevice
-extern int fBoot;
-extern int mPrevDevice;
-
 // ES310 Control
 typedef android::status_t (android_audio_legacy::ALSADevice::*ALSADevice_setMixerControl1)(const char *name, const char *);
 typedef android::status_t (android_audio_legacy::ALSADevice::*ALSADevice_setMixerControl2)(const char *name, unsigned int value, int index);
@@ -48,3 +34,4 @@ void enableAudienceloopback(int enable);
 android::status_t doAudienceCodec_Init(android_audio_legacy::ALSADevice *alsadev, ALSADevice_setMixerControl1 c1, ALSADevice_setMixerControl2 c2);
 android::status_t doAudienceCodec_DeInit(void);
 android::status_t doRouting_Audience_Codec(int mode, int device, bool enable);
+void tryWakeupAudience(void);

@@ -36,6 +36,11 @@
 #include <sys/system_properties.h>
 #include <AudioHardwareALSA.h>
 
+enum {
+    CMD_AUDIENCE_READY = -1,
+    CMD_AUDIENCE_WAKEUP = 0,
+};
+
 // AMP API
 int amplifier_open(void) {
     return 0;
@@ -53,8 +58,6 @@ int amplifier_close(void) {
 }
 
 // public: vars
-int fBoot = 1;
-int mPrevDevice;
 pthread_cond_t mAudienceCV;
 int mAudienceCmd;
 bool    mAudienceCodecInit = 0;
@@ -145,6 +148,14 @@ void *AudienceThreadWrapper(void *me) {
     return NULL;
 }
 
+void tryWakeupAudience(void) {
+	if (mAudienceCmd == CMD_AUDIENCE_READY)
+    {
+        mAudienceCmd = CMD_AUDIENCE_WAKEUP;
+        pthread_cond_signal(&mAudienceCV);
+    }
+}
+
 android::status_t doAudienceCodec_Init(android_audio_legacy::ALSADevice *alsadev, ALSADevice_setMixerControl1 c1, ALSADevice_setMixerControl2 c2)
 {
     int fd_codec = -1;
@@ -152,6 +163,11 @@ android::status_t doAudienceCodec_Init(android_audio_legacy::ALSADevice *alsadev
     int Audio_path = ES310_PATH_SUSPEND;
     int retry_count = 20;
     static const char *const path = "/dev/audience_es310";
+
+	if(mAudienceCodecInit!=0)
+		return 0;
+
+	android::Mutex::Autolock lock(mAudioCodecLock);
 
 	setMixerControl1 = c1;
 	setMixerControl2 = c2;
