@@ -288,7 +288,7 @@ android::status_t doRouting_Audience_Codec(int mode, int device, bool enable)
     ALOGD("doRouting_Audience_Codec mode:%d Routes:0x%x Enable:%d.\n", mode, device, enable);
 
     android::Mutex::Autolock lock(mAudioCodecLock);
-    if ((mode < AUDIO_MODE_CURRENT) || (mode >= AUDIO_MODE_MAX)) {
+    if ((mode < AUDIO_MODE_CURRENT) || (mode >= AUDIO_MODE_CNT)) {
         ALOGW("Illegal value: doRouting_Audience_Codec(%d, 0x%x, %d)", mode, device, enable);
         return -1;
     }
