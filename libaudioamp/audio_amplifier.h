@@ -34,4 +34,3 @@ void enableAudienceloopback(int enable);
 android::status_t doAudienceCodec_Init(android_audio_legacy::ALSADevice *alsadev, ALSADevice_setMixerControl1 c1, ALSADevice_setMixerControl2 c2);
 android::status_t doAudienceCodec_DeInit(void);
 android::status_t doRouting_Audience_Codec(int mode, int device, bool enable);
-void tryWakeupAudience(void);

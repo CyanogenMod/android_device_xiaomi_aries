@@ -36,21 +36,50 @@
 #include <sys/system_properties.h>
 #include <AudioHardwareALSA.h>
 
+void tryWakeupAudience(void);
+
 enum {
     CMD_AUDIENCE_READY = -1,
     CMD_AUDIENCE_WAKEUP = 0,
 };
 
 // AMP API
+int mDevices = AUDIO_DEVICE_NONE;
+audio_mode_t mMode = AUDIO_MODE_NORMAL;
+
 int amplifier_open(void) {
     return 0;
 }
 
 void amplifier_set_devices(int devices) {
+    if (devices != 0) {
+        if (mDevices != devices) {
+            mDevices = devices;
+            /* Set amplifier mode when device changes */
+            amplifier_set_mode(mMode);
+        }
+    }
 }
 
 int amplifier_set_mode(audio_mode_t mode) {
-    return 0;
+    int rc = 0;
+    mMode = mode;
+
+    if ((mMode == AUDIO_MODE_RINGTONE) &&
+        (mode == AUDIO_MODE_NORMAL)) {
+        enableAudienceloopback(0);
+        doRouting_Audience_Codec( 0, 0, false);
+    }
+
+    if (mode == AUDIO_MODE_RINGTONE) {
+        tryWakeupAudience();
+    }
+
+	if (mode == AUDIO_MODE_IN_CALL) {
+        tryWakeupAudience();
+	}
+
+    return rc;
 }
 
 int amplifier_close(void) {
