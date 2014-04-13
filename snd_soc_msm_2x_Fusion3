@@ -4209,32 +4209,6 @@ SectionDevice
 EndSection
 
 SectionDevice
-	Name "HeadsetMic Voice TX"
-	Comment "HeadsetMic Voice Tx device"
-
-	EnableSequence
-		'SLIM_0_TX Channels':0:One
-		'SLIM TX7 MUX':0:DEC5
-		'DEC5 MUX':0:ADC2
-		'DEC5 Volume':1:68
-		'ADC5 Volume':1:0
-		'DYN MICBIAS MUX':0:MB1
-	EndSequence
-
-	DisableSequence
-		'SLIM TX7 MUX':0:ZERO
-		'DEC5 MUX':0:ZERO
-		'DEC5 Volume':1:0
-		'ADC5 Volume':1:0
-		'DYN MICBIAS MUX':0:ZERO
-	EndSequence
-
-	ACDBID	8:2
-	EffectsMixerCTL "SRS TruMedia"
-
-EndSection
-
-SectionDevice
 	Name "Headset"
 	Comment "Headset Tx device"
 
@@ -4266,15 +4240,19 @@ SectionDevice
 
         EnableSequence
                 'SLIM_0_TX Channels':0:One
-                'SLIM TX7 MUX':0:DEC8
-                'DEC8 MUX':0:ADC2
-                'ADC2 Volume':1:66
+                'SLIM TX7 MUX':0:DEC5
+                'DEC5 MUX':0:ADC2
+                'DEC5 Volume':1:68
+                'ADC5 Volume':1:0
+                'DYN MICBIAS MUX':0:MB1
         EndSequence
 
         DisableSequence
                 'SLIM TX7 MUX':0:ZERO
-                'DEC8 MUX':0:ZERO
-                'ADC2 Volume':1:0
+                'DEC5 MUX':0:ZERO
+                'DEC5 Volume':1:0
+                'ADC5 Volume':1:0
+                'DYN MICBIAS MUX':0:ZERO
         EndSequence
 
         ACDBID        8:2
