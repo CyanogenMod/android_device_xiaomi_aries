@@ -69,6 +69,10 @@ void device_ui_init(UIParameters* ui_parameters) {
 }
 
 int device_recovery_start() {
+#ifdef PHILZ_TOUCH_RECOVERY
+	refresh_recovery_settings(1);
+#endif
+
     dualboot_init();
     update_menu_items();
     return 0;
