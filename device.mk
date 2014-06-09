@@ -154,8 +154,8 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += \
 	alsa.msm8960 \
-	audio_policy.msm8960 \
-	audio.primary.msm8960 \
+	audio_policy.aries \
+	audio.primary.aries \
 	audio.a2dp.default \
 	audio.usb.default \
 	audio.r_submix.default \
