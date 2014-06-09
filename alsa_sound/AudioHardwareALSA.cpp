@@ -40,6 +40,10 @@
 #include <audio_utils/resampler.h>
 #include <pthread.h>
 
+#ifdef USES_AUDIO_AMPLIFIER
+#include <audio_amplifier.h>
+#endif
+
 #include "AudioHardwareALSA.h"
 #ifdef QCOM_USBAUDIO_ENABLED
 #include "AudioUsbALSA.h"
@@ -157,7 +161,11 @@ AudioHardwareALSA::AudioHardwareALSA() :
     acdb_deallocate = NULL;
 #endif
 
+#ifdef USE_ES310
+    mALSADevice = new ALSADevice(this);
+#else
     mALSADevice = new ALSADevice();
+#endif
     if (!mALSADevice) {
         mStatus = NO_INIT;
         return;
@@ -353,6 +361,13 @@ AudioHardwareALSA::AudioHardwareALSA() :
         }
     }
 
+#ifdef USE_ES310
+    ALOGE("doAudienceCodec_Init+");
+    doAudienceCodec_Init(mALSADevice, &ALSADevice::setMixerControl,
+            &ALSADevice::setMixerControl);
+    ALOGE("doAudienceCodec_Init-");
+#endif
+
     //set default AudioParameters
     AudioParameter param;
     String8 key;
@@ -399,6 +414,10 @@ AudioHardwareALSA::AudioHardwareALSA() :
 
 AudioHardwareALSA::~AudioHardwareALSA()
 {
+#ifdef USE_ES310
+    doAudienceCodec_DeInit();
+#endif
+
     if (mUcMgr != NULL) {
         ALOGV("closing ucm instance: %u", (unsigned)mUcMgr);
         snd_use_case_mgr_close(mUcMgr);

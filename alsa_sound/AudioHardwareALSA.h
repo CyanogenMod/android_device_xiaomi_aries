@@ -281,8 +281,11 @@ class ALSADevice
 {
 
 public:
-
+#ifdef USE_ES310
+    ALSADevice(AudioHardwareALSA* parent);
+#else
     ALSADevice();
+#endif
     virtual ~ALSADevice();
 //    status_t init(alsa_device_t *module, ALSAHandleList &list);
     status_t open(alsa_handle_t *handle);
@@ -362,6 +365,10 @@ private:
     status_t   exitReadFromProxy();
     void       initProxyParams();
     status_t   startProxy();
+#ifdef USE_ES310
+    AudioHardwareALSA* mParent;
+    int mPrevDevice;
+#endif
 
 private:
     char mMicType[25];
@@ -910,6 +917,10 @@ protected:
     friend class AudioStreamOutALSA;
     friend class AudioStreamInALSA;
     friend class ALSAStreamOps;
+
+#ifdef USE_ES310
+    friend class ALSADevice;
+#endif
 
     ALSADevice*     mALSADevice;
 

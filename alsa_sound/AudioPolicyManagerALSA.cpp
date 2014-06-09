@@ -226,6 +226,15 @@ void AudioPolicyManager::setStreamMute(int stream,
             ALOGV("setStreamMute() unmuting non muted stream!");
             return;
         }
+
+#ifdef USE_ES310
+        if ((stream == 2) || (stream == 4)) {
+           if ((device & AUDIO_DEVICE_OUT_REMOTE_SUBMIX) != 0) {
+                outputDesc->mMuteCount[stream] = 1;
+            }
+        }
+#endif
+
         if (--outputDesc->mMuteCount[stream] == 0) {
             checkAndSetVolume(stream,
                               streamDesc.getVolumeIndex(device),
@@ -1145,7 +1154,7 @@ status_t AudioPolicyManager::startInput(audio_io_handle_t input)
     }
     AudioInputDescriptor *inputDesc = mInputs.valueAt(index);
 
-
+#ifndef USE_ES310
 #ifdef AUDIO_POLICY_TEST
     if (mTestInput == 0)
 #endif //AUDIO_POLICY_TEST
@@ -1165,6 +1174,7 @@ status_t AudioPolicyManager::startInput(audio_io_handle_t input)
             }
         }
     }
+#endif
 
     audio_devices_t newDevice = getDeviceForInputSource(inputDesc->mInputSource);
     if ((newDevice != AUDIO_DEVICE_NONE) && (newDevice != inputDesc->mDevice)) {
@@ -1189,6 +1199,11 @@ status_t AudioPolicyManager::startInput(audio_io_handle_t input)
     param.addInt(String8("camcorder_mode"), camcorder_enabled);
 
     mpClientInterface->setParameters(input, param.toString());
+
+#ifdef USE_ES310
+    ALOGV("startInput -> audio.record.vrmode:%s", cVRMode);
+    property_set("audio.record.vrmode", aliasSource ? "1" : "0");
+#endif
 
     inputDesc->mRefCount = 1;
     return NO_ERROR;

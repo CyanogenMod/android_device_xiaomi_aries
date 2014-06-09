@@ -57,6 +57,9 @@ static int (*csd_slow_talk)(uint8_t);
 static int (*csd_fens)(uint8_t);
 static int (*csd_start_voice)(void);
 static int (*csd_stop_voice)(void);
+#ifdef USE_ES310
+static int fBoot = 1;
+#endif
 #endif
 #endif
 #ifdef QCOM_ACDB_ENABLED
@@ -89,7 +92,12 @@ namespace sys_close {
 namespace android_audio_legacy
 {
 
+#ifdef USE_ES310
+ALSADevice::ALSADevice(AudioHardwareALSA* parent) {
+#else
 ALSADevice::ALSADevice() {
+#endif
+
     mSSRComplete = false;
 #ifdef USES_FLUENCE_INCALL
     mDevSettingsFlag = TTY_OFF | DMIC_FLAG;
@@ -139,6 +147,11 @@ ALSADevice::ALSADevice() {
 #ifdef USE_A2220
     mA2220Fd = -1;
     mA2220Mode = A2220_PATH_INCALL_RECEIVER_NSOFF;
+#endif
+
+#ifdef USE_ES310
+    mPrevDevice = 0;
+    mParent = parent;
 #endif
 
 #ifdef SEPERATED_AUDIO_INPUT
@@ -552,6 +565,25 @@ void ALSADevice::switchDevice(alsa_handle_t *handle, uint32_t devices, uint32_t 
     ALOGV("%s: device %#x mode:%d", __FUNCTION__, devices, mode);
 
     if ((mode == AUDIO_MODE_IN_CALL)  || (mode == AUDIO_MODE_IN_COMMUNICATION)) {
+#ifdef USE_ES310
+        if (mPrevDevice != 0) {
+            ALOGV("devices & AudioSystem::DEVICE_OUT_ALL:0x%x",
+                devices & AudioSystem::DEVICE_OUT_ALL);
+            if ((devices & AudioSystem::DEVICE_OUT_ALL) == 0) {
+                ALOGE("Should keep previous devices");
+                devices = devices | ((devices & AudioSystem::DEVICE_IN_ALL) |
+                        (mPrevDevice & AudioSystem::DEVICE_OUT_ALL));
+                ALOGE("device:%x, 0", devices);
+                if ((devices & AudioSystem::DEVICE_OUT_ALL) == 0) {
+                    ALOGE("set default RX path to earpiece");
+                    devices = devices | (AudioSystem::DEVICE_OUT_EARPIECE);
+                }
+                ALOGE("device:%x, 0-1", devices);
+                goto ROUTE;
+            }
+        }
+#endif
+
         if ((devices & AudioSystem::DEVICE_OUT_WIRED_HEADSET) ||
             (devices & AudioSystem::DEVICE_IN_WIRED_HEADSET)) {
             devices = devices | (AudioSystem::DEVICE_OUT_WIRED_HEADSET |
@@ -623,6 +655,10 @@ void ALSADevice::switchDevice(alsa_handle_t *handle, uint32_t devices, uint32_t 
             ALOGE("SwitchDevice:: Invalid A2DP Combination for mode %d", mode);
         }
     }
+#ifdef USE_ES310
+ROUTE:
+    mPrevDevice  = devices;
+#endif
 #ifdef QCOM_SSR_ENABLED
     if ((devices & AudioSystem::DEVICE_IN_BUILTIN_MIC) && ( 6 == handle->channels)) {
         if (!strncmp(handle->useCase, SND_USE_CASE_VERB_HIFI_REC, strlen(SND_USE_CASE_VERB_HIFI_REC))
@@ -647,6 +683,14 @@ void ALSADevice::switchDevice(alsa_handle_t *handle, uint32_t devices, uint32_t 
              (mode == AUDIO_MODE_IN_COMMUNICATION)))
             inCallDevSwitch = true;
     }
+
+#ifdef USE_ES310
+    ALOGV("rxDevice:%s, mCurRxUCMDevice:%s, mode:%d", rxDevice, mCurRxUCMDevice, mode);
+    if (((mode == AUDIO_MODE_IN_CALL) ||(mode == AUDIO_MODE_IN_COMMUNICATION)) &&
+        (strncmp(rxDevice, mCurRxUCMDevice, MAX_STR_LEN))) {
+        enableAudienceloopback(0);
+    }
+#endif
 
 #ifdef QCOM_CSDCLIENT_ENABLED
     if (isPlatformFusion3() && (inCallDevSwitch == true)) {
@@ -691,6 +735,11 @@ void ALSADevice::switchDevice(alsa_handle_t *handle, uint32_t devices, uint32_t 
                     }
                 }
             }
+
+#ifdef USE_ES310
+            enableAudienceloopback(0);
+#endif
+
             snd_use_case_set(handle->ucMgr, "_disdev", mCurRxUCMDevice);
         }
     }
@@ -830,6 +879,24 @@ void ALSADevice::switchDevice(alsa_handle_t *handle, uint32_t devices, uint32_t 
 #endif
 
 #ifdef QCOM_CSDCLIENT_ENABLED
+
+#ifdef USE_ES310
+    unsigned int input_device = 0;
+    if (((devices & AUDIO_DEVICE_IN_ALL) == 0) &&
+        (mCurTxUCMDevice != NULL) &&
+        (mode == AudioSystem::MODE_NORMAL)) {
+        if (!strncmp("Line", mCurTxUCMDevice, MAX_STR_LEN)) {
+            ALOGE("Add Builtin Mic device");
+            input_device = AudioSystem::DEVICE_IN_BUILTIN_MIC;
+        }
+        if (!strncmp("HeadsetMic TX", mCurTxUCMDevice, MAX_STR_LEN)) {
+            ALOGE("Add wired headset device");
+            input_device = AudioSystem::DEVICE_IN_WIRED_HEADSET;
+        }
+    }
+    doRouting_Audience_Codec(mode, devices | input_device, true);
+#endif
+
     if (isPlatformFusion3() && (inCallDevSwitch == true)) {
         if (((rx_dev_id == DEVICE_SPEAKER_MONO_RX_ACDB_ID ) || (rx_dev_id == DEVICE_SPEAKER_STEREO_RX_ACDB_ID ))
          && tx_dev_id == DEVICE_HANDSET_TX_ACDB_ID) {
@@ -873,6 +940,11 @@ void ALSADevice::switchDevice(alsa_handle_t *handle, uint32_t devices, uint32_t 
                 ALOGE("csd_enable_device failed, error %d", err);
             }
         }
+
+#ifdef USE_ES310
+        enableAudienceloopback(1);
+#endif
+
     }
 #endif
 
@@ -1648,9 +1720,27 @@ void ALSADevice::disableDevice(alsa_handle_t *handle)
                 usecase_type |= getUseCaseType(mods_list[i]);
             }
         }
+
+#ifdef USE_ES310
+        if (fBoot == 1) {
+            fBoot = 0;
+            strlcpy(mCurTxUCMDevice, "Line", sizeof(mCurTxUCMDevice));
+        }
+#endif
+
         ALOGV("usecase_type is %d\n", usecase_type);
-        if (!(usecase_type & USECASE_TYPE_TX) && (strncmp(mCurTxUCMDevice, "None", 4)))
+        if (!(usecase_type & USECASE_TYPE_TX) && (strncmp(mCurTxUCMDevice, "None", 4))) {
             snd_use_case_set(handle->ucMgr, "_disdev", mCurTxUCMDevice);
+
+#ifdef USE_ES310
+            ALOGV("disableDevice --> close the Audience, isAnyCallActive:%d",
+                mParent->isAnyCallActive());
+            if ((mParent->isAnyCallActive() == false) && (mCallMode == AUDIO_MODE_NORMAL)) {
+                enableAudienceloopback(0);
+                doRouting_Audience_Codec( 0, 0, false);
+            }
+#endif
+        }
         if (!(usecase_type & USECASE_TYPE_RX) && (strncmp(mCurRxUCMDevice, "None", 4)))
             snd_use_case_set(handle->ucMgr, "_disdev", mCurRxUCMDevice);
     } else {
@@ -1822,6 +1912,12 @@ char* ALSADevice::getUCMDevice(uint32_t devices, int input, char *rxDevice)
                 return strdup(SND_USE_CASE_DEV_FM_SPEAKER);
             }
 #endif
+#ifdef USE_ES310
+            if (mCallMode == AUDIO_MODE_IN_COMMUNICATION) {
+                ALOGV("VOIP mode using SND_USE_CASE_DEV_VOIP_SPEAKER");
+                return strdup(SND_USE_CASE_DEV_VOC_SPEAKER);
+            }
+#endif
             return strdup(SND_USE_CASE_DEV_SPEAKER); /* SPEAKER RX */
         } else if ((devices & AudioSystem::DEVICE_OUT_WIRED_HEADSET) ||
                    (devices & AudioSystem::DEVICE_OUT_WIRED_HEADPHONE)) {
@@ -1936,7 +2032,7 @@ char* ALSADevice::getUCMDevice(uint32_t devices, int input, char *rxDevice)
                     if (((rxDevice != NULL) &&
                         (!strncmp(rxDevice, SND_USE_CASE_DEV_SPEAKER,
                         (strlen(SND_USE_CASE_DEV_SPEAKER)+1))
-#ifdef SEPERATED_VOICE_SPEAKER
+#if defined(SEPERATED_VOICE_SPEAKER) && !defined(USE_ES310)
                         || !strncmp(rxDevice, SND_USE_CASE_DEV_VOC_SPEAKER,
                         (strlen(SND_USE_CASE_DEV_VOC_SPEAKER)+1))
 #endif
@@ -2034,6 +2130,13 @@ char* ALSADevice::getUCMDevice(uint32_t devices, int input, char *rxDevice)
                 }
 #endif
                 else {
+#ifdef USE_ES310
+                    if (mCallMode == AUDIO_MODE_IN_CALL) {
+                        return strdup(SND_USE_CASE_DEV_VOC_LINE); /* VOICE BUILTIN-MIC TX */
+                    } else {
+                        return strdup(SND_USE_CASE_DEV_LINE); /* BUILTIN-MIC TX */
+                    }
+#endif
                     if ((rxDevice != NULL) &&
                         !strncmp(rxDevice, SND_USE_CASE_DEV_ANC_HANDSET,
                             strlen(SND_USE_CASE_DEV_ANC_HANDSET) + 1)) {
@@ -2057,6 +2160,14 @@ char* ALSADevice::getUCMDevice(uint32_t devices, int input, char *rxDevice)
             }
             if (mInputSource == AUDIO_SOURCE_VOICE_RECOGNITION) {
                 return strdup(SND_USE_CASE_DEV_VOICE_RECOGNITION_HEADSET);
+            }
+#endif
+
+#ifdef USE_ES310
+            if (mCallMode == AUDIO_MODE_IN_CALL ||
+                mCallMode == AUDIO_MODE_IN_COMMUNICATION)
+            {
+                return strdup(SND_USE_CASE_DEV_VOC_HEADSET);
             }
 #endif
             return strdup(SND_USE_CASE_DEV_HEADSET); /* HEADSET TX */
