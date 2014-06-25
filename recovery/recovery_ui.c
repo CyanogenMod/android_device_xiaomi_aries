@@ -27,6 +27,8 @@
 #include "mounts.h"
 #include "roots.h"
 
+#define MENU_TEXT_COLOR_RED 255, 0, 0, 255
+
 char* MENU_HEADERS[] = { NULL };
 
 char* MENU_ITEMS[] = { "Managed System",
