@@ -1,5 +1,5 @@
 #
-# Copyright 2012 The Android Open Source Project
+# Copyright (C) 2014 The CyanogenMod Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,18 +16,20 @@
 
 ifneq ($(filter aries aries,$(TARGET_DEVICE)),)
 
-LOCAL_PATH:= $(call my-dir)
+LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-$(shell mkdir -p $(OUT)/obj/SHARED_LIBRARIES/libqminvapi_intermediates)
-$(shell touch $(OUT)/obj/SHARED_LIBRARIES/libqminvapi_intermediates/export_includes)
+LOCAL_SRC_FILES := wcnss_xiaomi_client.c
 
-LOCAL_SRC_FILES := addrloader.c
-LOCAL_SHARED_LIBRARIES := libqminvapi liblog libcutils liblogwrap
+LOCAL_C_INCLUDES += hardware/qcom/wlan/wcnss_service
+LOCAL_CFLAGS += -Wall
+
+LOCAL_SHARED_LIBRARIES := libc libcutils libutils liblog libqminvapi
+
 LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE_OWNER := xiaomi
-LOCAL_MODULE := wifiAddrLoader
-include $(BUILD_EXECUTABLE)
+LOCAL_MODULE := libwcnss_qmi
+
+include $(BUILD_SHARED_LIBRARY)
 
 endif
