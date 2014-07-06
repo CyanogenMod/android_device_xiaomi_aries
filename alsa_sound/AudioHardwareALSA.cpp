@@ -702,6 +702,18 @@ status_t AudioHardwareALSA::setParameters(const String8& keyValuePairs)
 
     key = String8(AudioParameter::keyRouting);
     if (param.getInt(key, device) == NO_ERROR) {
+        /*
+         * When HDMI cable is unplugged/usb hs is disconnected the
+         * music playback is paused and the policy manager sends routing=0
+         * But the audioflingercontinues to write data until standby time
+         * (3sec). As the HDMI core is turned off, the write gets blocked.
+         * Avoid this by routing audio to speaker until standby.
+         */
+        if ((mALSADevice->mCurDevice == AUDIO_DEVICE_OUT_AUX_DIGITAL ||
+                mALSADevice->mCurDevice == AUDIO_DEVICE_OUT_ANLG_DOCK_HEADSET) &&
+                device == AUDIO_DEVICE_NONE) {
+            device = AUDIO_DEVICE_OUT_SPEAKER;
+        }
         // Ignore routing if device is 0.
         if(device) {
             doRouting(device,NULL);
@@ -1153,7 +1165,7 @@ status_t AudioHardwareALSA::doRouting(int device, char* useCase)
             //For FM we don't open an output stream. Hence required usecase shouldn't be considered.
             if ( (useCase != NULL) && (activeUsecase != USECASE_FM) ) {
                 for(ALSAHandleList::iterator it2 = mDeviceList.begin(); it2 != mDeviceList.end(); it2++) {
-                    if (!strncmp(useCase, it2->useCase,sizeof(useCase))) {
+                    if (!strcmp(useCase, it2->useCase)) {
                             it = it2;
                             ALOGV("found matching required usecase:%s device:%x",it->useCase,it->devices);
                             activeUsecase = useCaseStringToEnum(it->useCase);
@@ -1188,6 +1200,12 @@ status_t AudioHardwareALSA::doRouting(int device, char* useCase)
                             startPlaybackOnExtOut_l(activeUsecase);
                         } else {
                            mALSADevice->route(&(*it),(uint32_t)device, newMode);
+                           for(ALSAHandleList::iterator it2 = mDeviceList.begin(); it2 != mDeviceList.end(); it2++) {
+                                if ((it2->handle || it2->rxHandle) && !(getExtOutActiveUseCases_l() && it2->useCase)) {
+                                    startPlaybackOnExtOut_l(useCaseStringToEnum(it2->useCase));
+                                    break;
+                                }
+                           }
                         }
                     }
                     if (activeUsecase == USECASE_FM){
