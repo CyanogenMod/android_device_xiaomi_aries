@@ -132,6 +132,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 #Upto 3 layers can go through overlays
 PRODUCT_PROPERTY_OVERRIDES += persist.hwc.mdpcomp.enable=true
 
+# Add ro.product.device to the file build.prop to support the generation of OTA upgrade package
+PRODUCT_PROPERTY_OVERRIDES += ro.product.device=aries
+
 PRODUCT_CHARACTERISTICS := nosdcard
 
 PRODUCT_TAGS += dalvik.gc.type-precise
