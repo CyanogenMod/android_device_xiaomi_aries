@@ -523,9 +523,9 @@ service qrngd /system/bin/qrngd -f
 # on property:gsm.sim.state=READY
 #    start diag_mdlog
 
-# Set performance profile
+on property:sys.boot_completed=1
+   # Set performance profile
    setprop sys.perf.profile 1
-   start thermald
 
 # CM Performance Profiles
 
