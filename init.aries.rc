@@ -523,10 +523,6 @@ service qrngd /system/bin/qrngd -f
 # on property:gsm.sim.state=READY
 #    start diag_mdlog
 
-on property:sys.boot_completed=1
-   # Set performance profile
-   setprop sys.perf.profile 1
-
 # CM Performance Profiles
 
 # Powersave
