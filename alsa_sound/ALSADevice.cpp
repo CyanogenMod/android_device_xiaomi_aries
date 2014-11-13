@@ -889,7 +889,7 @@ ROUTE:
             ALOGE("Add Builtin Mic device");
             input_device = AudioSystem::DEVICE_IN_BUILTIN_MIC;
         }
-        if (!strncmp("HeadsetMic TX", mCurTxUCMDevice, MAX_STR_LEN)) {
+        if (!strncmp("Headset", mCurTxUCMDevice, MAX_STR_LEN)) {
             ALOGE("Add wired headset device");
             input_device = AudioSystem::DEVICE_IN_WIRED_HEADSET;
         }
