@@ -87,6 +87,27 @@
 
 #define SYS_POWER_STATE "/sys/power/state"
 
+#define BATTERY_LIGHT_FLASH_ON_MS	3000
+#define BATTERY_LIGHT_FLASH_OFF_MS	3000
+
+char const*const RED_LED_FILE
+        = "/sys/class/leds/red/brightness";
+
+char const*const GREEN_LED_FILE
+        = "/sys/class/leds/green/brightness";
+
+char const*const BLUE_LED_FILE
+        = "/sys/class/leds/blue/brightness";
+
+char const*const LED_FREQ_FILE
+        = "/sys/class/leds/red/device/grpfreq";
+
+char const*const LED_PWM_FILE
+        = "/sys/class/leds/red/device/grppwm";
+
+char const*const LED_BLINK_FILE
+        = "/sys/class/leds/red/device/blink";
+
 struct key_state {
     bool pending;
     bool down;
@@ -881,7 +902,6 @@ static void update_screen_state(struct charger *charger, int64_t now)
 
     if (!batt_anim->run || now < charger->next_screen_transition)
         return;
-
     /* animation is over, blank screen and leave */
     if (batt_anim->cur_cycle == batt_anim->num_cycles) {
         reset_animation(batt_anim);
@@ -1134,6 +1154,49 @@ static int input_callback(int fd, short revents, void *data)
     return 0;
 }
 
+static int write_int(char const* path, int value) {
+    char buffer[20];
+    int bytes = sprintf(buffer, "%d\n", value);
+    return write_file(path, buffer, bytes);
+}
+
+static void update_battery_light(struct charger *charger) {
+    const int onMS = BATTERY_LIGHT_FLASH_ON_MS;
+    const int offMS = BATTERY_LIGHT_FLASH_OFF_MS;
+    const int totalMS = onMS + offMS;
+    // the freq value must be set as period/50
+    const int freq = totalMS / 100;
+    // pwm specifies the ratio of ON versus OFF
+    // pwm = 0 -> always off
+    // pwm = 255 => always on
+    const int pwm = (onMS * 255) / totalMS;
+    const int blink = 1;
+    static int lastCapacity = -1;
+    int red, green, blue, color = 0xff0000;
+    int batt_cap = get_battery_capacity(charger);
+
+    if (lastCapacity == batt_cap)
+        return;
+    lastCapacity = batt_cap;
+
+    if (batt_cap >= 90)
+        color = 0x00ff00;
+    else if (batt_cap >= 20)
+        color = 0xffff00;
+
+    red = (color >> 16) & 0xFF;
+    green = (color >> 8) & 0xFF;
+    blue = color & 0xFF;
+
+    write_int(RED_LED_FILE, red);
+    write_int(GREEN_LED_FILE, green);
+    write_int(BLUE_LED_FILE, blue);
+
+    write_int(LED_FREQ_FILE, freq);
+    write_int(LED_PWM_FILE, pwm);
+    write_int(LED_BLINK_FILE, blink);
+}
+
 static void event_loop(struct charger *charger)
 {
     int ret;
@@ -1149,7 +1212,7 @@ static void event_loop(struct charger *charger)
          * screen transitions (animations, etc)
          */
         update_screen_state(charger, now);
-
+        update_battery_light(charger);
         wait_next_event(charger, now);
     }
 }
@@ -1338,7 +1401,7 @@ int main(int argc, char **argv)
 
     dump_last_kmsg();
 
-	alarm_thread_create();
+    alarm_thread_create();
 
     LOGI("--------------- STARTING CHARGER MODE ---------------\n");
 
@@ -1386,6 +1449,5 @@ int main(int argc, char **argv)
     kick_animation(charger->batt_anim);
 
     event_loop(charger);
-
     return 0;
 }
